@@ -1,0 +1,57 @@
+[
+  {
+    "carrier": "AirlineA",
+    "departure": "Vladivostok",
+    "arrival": "Tel-Aviv",
+    "duration": 590,
+    "price": 290
+  },
+  {
+    "carrier": "AirlineA",
+    "departure": "Vladivostok",
+    "arrival": "Tel-Aviv",
+    "duration": 600,
+    "price": 330
+  },
+  {
+    "carrier": "AirlineA",
+    "departure": "Moscow",
+    "arrival": "St.Petersburg",
+    "duration": 610,
+    "price": 310},
+  {
+    "carrier": "AirlineB",
+    "departure": "Vladivostok",
+    "arrival": "Tel-Aviv",
+    "duration": 620,
+    "price": 320
+  },
+  {
+    "carrier": "AirlineB",
+    "departure": "Vladivostok",
+    "arrival": "Tel-Aviv",
+    "duration": 500,
+    "price": 300
+  },
+  {
+    "carrier": "AirlineB",
+    "departure": "Moscow",
+    "arrival": "St.Petersburg",
+    "duration": 620,
+    "price": 300
+  },
+  {
+    "carrier": "AirlineC",
+    "departure": "Vladivostok",
+    "arrival": "Tel-Aviv",
+    "duration": 650,
+    "price": 380
+  },
+  {
+    "carrier": "AirlineC",
+    "departure": "Moscow",
+    "arrival": "St.Petersburg",
+    "duration": 630,
+    "price": 320
+  }
+]
