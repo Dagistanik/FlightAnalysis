@@ -1,11 +1,13 @@
 package org.example;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.*;
+import java.nio.file.*;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class FlightAnalysis {
@@ -39,8 +41,9 @@ public class FlightAnalysis {
         try {
             String json = new String(Files.readAllBytes(Paths.get(filePath)));
             Gson gson = new Gson();
-            Ticket[] ticketsArray = gson.fromJson(json, Ticket[].class);
-            return Arrays.asList(ticketsArray);
+            Map<String, List<Ticket>> ticketsMap = gson.fromJson(json, new TypeToken<Map<String, List<Ticket>>>() {
+            }.getType());
+            return ticketsMap.get("tickets");
         } catch (IOException e) {
             e.printStackTrace();
             return null;
@@ -49,22 +52,36 @@ public class FlightAnalysis {
 
     private static Map<String, Integer> calculateMinDurations(List<Ticket> tickets) {
         return tickets.stream()
-                .filter(t -> t.getDeparture().equals("Vladivostok") && t.getArrival().equals("Tel-Aviv"))
+                .filter(t -> t.getOriginName().equals("Владивосток") && t.getDestinationName().equals("Тель-Авив"))
                 .collect(Collectors.groupingBy(
                         Ticket::getCarrier,
-                        Collectors.minBy(Comparator.comparingInt(Ticket::getDuration))
+                        Collectors.minBy(Comparator.comparingInt(t -> calculateDuration(t.getDepartureTime(), t.getArrivalTime())))
                 ))
                 .entrySet()
                 .stream()
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
-                        entry -> entry.getValue().get().getDuration()
+                        entry -> calculateDuration(entry.getValue().get().getDepartureTime(), entry.getValue().get().getArrivalTime())
                 ));
+    }
+
+    private static int calculateDuration(String departureTime, String arrivalTime) {
+        String[] departureSplit = departureTime.split(":");
+        String[] arrivalSplit = arrivalTime.split(":");
+
+        int departureMinutes = Integer.parseInt(departureSplit[0]) * 60 + Integer.parseInt(departureSplit[1]);
+        int arrivalMinutes = Integer.parseInt(arrivalSplit[0]) * 60 + Integer.parseInt(arrivalSplit[1]);
+
+        if (arrivalMinutes < departureMinutes) {
+            arrivalMinutes += 24 * 60;
+        }
+
+        return arrivalMinutes - departureMinutes;
     }
 
     private static double calculateAveragePrice(List<Ticket> tickets) {
         return tickets.stream()
-                .filter(t -> t.getDeparture().equals("Vladivostok") && t.getArrival().equals("Tel-Aviv"))
+                .filter(t -> t.getOriginName().equals("Владивосток") && t.getDestinationName().equals("Тель-Авив"))
                 .mapToInt(Ticket::getPrice)
                 .average()
                 .orElse(0);
@@ -72,7 +89,7 @@ public class FlightAnalysis {
 
     private static double calculateMedianPrice(List<Ticket> tickets) {
         List<Integer> prices = tickets.stream()
-                .filter(t -> t.getDeparture().equals("Vladivostok") && t.getArrival().equals("Tel-Aviv"))
+                .filter(t -> t.getOriginName().equals("Владивосток") && t.getDestinationName().equals("Тель-Авив"))
                 .map(Ticket::getPrice)
                 .sorted()
                 .collect(Collectors.toList());
