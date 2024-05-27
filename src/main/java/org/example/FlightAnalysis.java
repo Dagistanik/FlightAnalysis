@@ -4,7 +4,11 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.nio.file.Paths;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -55,25 +59,33 @@ public class FlightAnalysis {
                 .filter(t -> t.getOriginName().equals("Владивосток") && t.getDestinationName().equals("Тель-Авив"))
                 .collect(Collectors.groupingBy(
                         Ticket::getCarrier,
-                        Collectors.minBy(Comparator.comparingInt(t -> calculateDuration(t.getDepartureTime(), t.getArrivalTime())))
+                        Collectors.minBy(Comparator.comparingInt(t -> calculateDuration(t.getDepartureDate(), t.getDepartureTime(), t.getArrivalDate(), t.getArrivalTime())))
                 ))
                 .entrySet()
                 .stream()
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
-                        entry -> calculateDuration(entry.getValue().get().getDepartureTime(), entry.getValue().get().getArrivalTime())
+                        entry -> calculateDuration(entry.getValue().get().getDepartureDate(), entry.getValue().get().getDepartureTime(), entry.getValue().get().getArrivalDate(), entry.getValue().get().getArrivalTime())
                 ));
     }
 
-    private static int calculateDuration(String departureTime, String arrivalTime) {
-        String[] departureSplit = departureTime.split(":");
-        String[] arrivalSplit = arrivalTime.split(":");
+    private static int calculateDuration(String departureDate, String departureTime, String arrivalDate, String arrivalTime) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yy");
+        LocalDate departureLocalDate = LocalDate.parse(departureDate, formatter);
+        LocalDate arrivalLocalDate = LocalDate.parse(arrivalDate, formatter);
 
-        int departureMinutes = Integer.parseInt(departureSplit[0]) * 60 + Integer.parseInt(departureSplit[1]);
-        int arrivalMinutes = Integer.parseInt(arrivalSplit[0]) * 60 + Integer.parseInt(arrivalSplit[1]);
+        long daysBetween = ChronoUnit.DAYS.between(departureLocalDate, arrivalLocalDate);
+
+        String[] departureTimeSplit = departureTime.split(":");
+        String[] arrivalTimeSplit = arrivalTime.split(":");
+
+        int departureMinutes = Integer.parseInt(departureTimeSplit[0]) * 60 + Integer.parseInt(departureTimeSplit[1]);
+        int arrivalMinutes = Integer.parseInt(arrivalTimeSplit[0]) * 60 + Integer.parseInt(arrivalTimeSplit[1]);
+
+        arrivalMinutes += (int) (daysBetween * 24 * 60);
 
         if (arrivalMinutes < departureMinutes) {
-            arrivalMinutes += 24 * 60;
+            throw new IllegalArgumentException("Arrival time is before departure time.");
         }
 
         return arrivalMinutes - departureMinutes;

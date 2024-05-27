@@ -36,4 +36,12 @@ public class Ticket {
     public int getPrice() {
         return price;
     }
+
+    public String getDepartureDate() {
+        return departure_date;
+    }
+
+    public String getArrivalDate() {
+        return arrival_date;
+    }
 }
